@@ -1,5 +1,6 @@
 //on importe jsonwebtoken
 const jwt = require('jsonwebtoken');
+require("dotenv").config();
  
 
 //Middleware permettant d"extraire les infos contenu du token et les transmette aux autres middlewares

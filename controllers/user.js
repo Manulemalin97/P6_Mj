@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 //on importe notre model User
 const User = require("../models/User");
 
+
+//////////////////////////////////////////////////////////////////// Signup //////////////////////////////////////////////////////////
 exports.signup = (req, res, next) => {
   console.log("signup");
   bcrypt//cryptage du mdp
@@ -31,6 +33,8 @@ console.log('utilisateur crée !')
     .catch((error) => res.status(500).json({ error }));
 };
 
+
+/////////////////////////////////////////////// Login ///////////////////////////////////////////////////////////////////////
 exports.login = (req, res, next) => {
   console.log("login");
   User.findOne({ email: req.body.email })
