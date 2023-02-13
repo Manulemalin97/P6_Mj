@@ -5,18 +5,23 @@ const Sauce = require('../models/Sauce');
 //   y compris aux fonctions permettant de supprimer les fichiers.
 const fs = require ('fs');
 const jwt = require('jsonwebtoken');
+const dotenv = require("dotenv").config();
+
+
+
 
 
 
 exports.createSauce = (req, res, next) => {
-  const sauceObject = JSON.parse(req.body.sauce);
-  delete sauceObject._id;
-  delete sauceObject._userId; 
-  const sauce = new Sauce({
-    ...sauceObject,
+  const sauceObject = JSON.parse(req.body.sauce); // on parse car 
+  delete sauceObject._id; // on supprime l'id stocké car notre id est généré automatiquement par notre base de données.
+  delete sauceObject._userId;  // et le champ user id de la personne qui a crée l'objet, ne jamais faire confiance au client.
+  const sauce = new Sauce({ // on crée notre sauce
+    ...sauceObject, // on affiche ce qui reste en ayant enlevé les 2 champs
     
-    userId: req.auth.userId,
-    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`//generation de lurl
+    //propriétés de lobjet requete 1.protocol 2. le nom d'hôte (/image ou on stock nos images) 3. le nom de fichier donné par multer 
     
   });
   console.log(sauce)    
@@ -41,30 +46,23 @@ exports.createSauce = (req, res, next) => {
 
 
 /////////////////////////////////////////////// récupérer toutes les Sauces //////////////////////////////////////////////////////
-exports.getAllSauce= (req, res, next) => {
-    Sauce.find()
+exports.getAllSauce= (req, res, next) => { // requete, réponse, middleware next qui nous envoie au prochain middleware
+    Sauce.find() // find recupere tout
     .then((sauce) => res.status(200).json(sauce))
-    .catch((error) => res.status(400).json({error: error}))
+    .catch((errorMsg) => res.status(400).json({error: errorMsg}))
   };
 
   /////////////////////////////////////////////// récupérer une sauce //////////////////////////////////////////////////////
   exports.getOneSauce = (req, res, next) => {
-    Sauce.findOne({ _id: req.params.id })
-    .then(sauce => res.status(200).json(sauce))
-    .catch(error => res.status(404).json({error: error}))
+    Sauce.findOne({ _id: req.params.id }) //find one recupere un élément
+    .then(sauce => res.status(200).json(sauce)) // si sa a marché, réussite
+    .catch(errorMsg => res.status(404).json({error: errorMsg})) //si non, erreur
   };
 
-  // Dans cette version modifiée de la fonction, on crée un objet sauceObject qui regarde si req.file existe ou non. 
-    // S'il existe, on traite la nouvelle image ; s'il n'existe pas, on traite simplement l'objet entrant. 
-    // On crée ensuite une instance Sauce à partir de sauceObject, puis on effectue la modification. Nous avons auparavant, 
-    // comme pour la route POST, supprimé le champ _userId envoyé par le client afin 
-    // d’éviter de changer son propriétaire et nous avons vérifié que le requérant est bien le propriétaire de l’objet.
-
-
-    //vérifier que l'user qui modifie ou supprime la sauce en est bien l'auteur
+////////////////////////////////// verification du userID //////////////////////////////////////////////////////////////////////
     function verifyUser(req, userId){
       const token = req.headers.authorization.split(" ")[1];
-      const decodedToken = jwt.verify(token, process.env.RANDOM_TOKEN_SECRET);
+      const decodedToken = jwt.verify(token,  process.env.AUTH_TOKEN);
       const tokenUserId = decodedToken.userId;
       if(userId == tokenUserId){
         return true
@@ -74,18 +72,18 @@ exports.getAllSauce= (req, res, next) => {
     };
 //////////////////////////////////////////////////////////// Modifier sauce ///////////////////////////////////////////////
 
- exports.modifySauce = (req, res, next) => {
-  if(req.file) { // Si l'image est modifiée, on supprime l'ancienne image dans /images
+exports.modifySauce = (req, res, next) => {
+  if(req.file) { 
       Sauce.findOne({ _id: req.params.id })
           .then(sauce => {
             if(!verifyUser(req, sauce.userId)){
               return res.status(403).json({message : "Action non autorisée"})
             }
-              const filename = sauce.imageUrl.split('/images/')[1];
-              fs.unlink(`images/${filename}`, () => {
-                  const sauceObject =
+           
+              fs.unlink(`images/${filename}`, () => { //The fs.unlink() method is used to remove a file or symbolic link from the filesystem
+                  const sauceObject = 
                   {   
-                      ...JSON.parse(req.body.sauce),//
+                      ...JSON.parse(req.body.sauce),
                       imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
                   }
                   Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
@@ -97,22 +95,23 @@ exports.getAllSauce= (req, res, next) => {
     Sauce.findOne({ _id: req.params.id})
     .then(sauce => {//on verifie que la sauce appartient bien à l'utilisateur avec verifyUser
       if(!verifyUser(req, sauce.userId)){
-        return res.status(403).json({message : "Action non autorisée"})
+        return res.status(403).json({message : "Action non autorisée .."})
       }
       const sauceObject = { ...req.body } 
       Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
           .then(() => 
-          res.status(200).json({ message: 'Sauce modifiée avec succès !' }))
+          res.status(200).json({ message: 'Sauce modifiée !' }))
           .catch(error => res.status(400).json({ error }))
     })}
 };
+
 
 //////////////////////////////////////////////////// Supprimer sauce ////////////////////////////////////////////////////////////////////
   exports.deleteSauce = (req, res, next) => {
 
     Sauce.findOne({ _id: req.params.id }) // récupération de l'objet en base
       .then((sauce) => {
-        if(!verifyUser(req, sauce.userId)){//on verifie que la sauce appartient bien à l'utilisateur avec verifyUser
+        if(!verifyUser(req, sauce.userId)){//on verifie que la sauce appartient à l'utilisateur avec verifyUser
           return res.status(403).json({message : "Action non autorisée"})
         }
         const filename = sauce.imageUrl.split("/images/")[1]; // On récupère avec .split le nom ficher image dans l'URL
@@ -124,7 +123,11 @@ exports.getAllSauce= (req, res, next) => {
         });
       })
       .catch((error) => res.status(500).json({ error }));
+
+      
 };
+
+
 
 
 

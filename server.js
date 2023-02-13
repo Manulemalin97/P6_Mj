@@ -2,7 +2,7 @@
 const http = require('http');
 // on importe app 
 const app = require('./app');
-
+const dotenv = require("dotenv").config();
 
 const normalizePort = val => {
   const port = parseInt(val, 10);
@@ -15,8 +15,14 @@ const normalizePort = val => {
   }
   return false;
 };
+
+//importer le package pour utiliser les variables d'envitonnement
+
+
 //la fonction normalizePort renvoie un port valide
-const port = normalizePort(process.env.PORT || '3000'); 
+const port = normalizePort(process.env.PORT ); 
+
+//parmamètrazge du port avec la méthode set de Express
 app.set('port', port);
 
 //la fonction errorHandler  recherche les différentes erreurs et les gère de manière appropriée. Elle est ensuite enregistrée dans le serveur ;

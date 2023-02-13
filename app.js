@@ -6,15 +6,16 @@ const mongoose = require("mongoose");
 
 const userRoutes = require("./routes/user");
 const sauceRoutes = require("./routes/sauce");
-const path = require('path')
+const path = require('path');
+const dotenv = require('dotenv').config();
 
 
 const app = express();
 
 mongoose.set("strictQuery", true);
 mongoose
-  .connect(
-    "mongodb+srv://manujansen:i35b8Ue59Sa8HynH@cluster0.7jlbhre.mongodb.net/?retryWrites=true&w=majority",
+  .connect(// on utilise des 'backticks pour utiliser des variables' $ pour les variables d'environnement, process.env pour chercher notre var denvironnement
+    `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_CLUSTER}.mongodb.net/?retryWrites=true&w=majority`,
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(() => console.log("Connexion à MongoDB réussie !"))
@@ -39,7 +40,8 @@ app.use((req, res, next) => {
 
 app.use("/api/auth", userRoutes);
 app.use("/api/sauces", sauceRoutes);
-app.use('/images', express.static(path.join(__dirname, 'images')));
+//On configure notre serveur pour renvoyer des fichiers statiques pour une route donnée avec  express.static()  et  path.join().
+app.use("/images", express.static(path.join(__dirname, 'images')));
 
 //const app qui sera notre application, on appelle la fonction express, on la crée
 
