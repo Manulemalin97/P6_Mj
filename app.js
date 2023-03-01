@@ -1,3 +1,12 @@
+/**
+ *  app.js
+ *  Création et démarrage de notre application express
+ *
+ *  @author : Manuel JANSEN
+ *  @version : 1.0
+ *  @ date : 2023-02
+ *
+ **/
 
 /**
  * Définition de notre app
@@ -27,10 +36,11 @@ mongoose
   .then(() => console.log("Connexion à MongoDB réussie !"))
   .catch(() => console.log("Connexion à MongoDB échouée !"));
 
-//intercepte req qui ont un content type json et met a dispo corps de la requete
+//Cette fonction est un middleware qui permet de décoder les données JSON envoyées dans le corps de la requête HTTP,
+// et de les rendre disponibles dans la propriété req.body de l'objet request.
 app.use(express.json());
 
-//Headers req 'CORS'
+//Pour permettre des requêtes cross-origin (et empêcher des erreurs CORS), des headers spécifiques de contrôle d'accès doivent être précisés pour tous vos objets de réponse.
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -44,6 +54,7 @@ app.use((req, res, next) => {
   next();
 });
 
+//La méthode app.use() nous permet d'attribuer un middleware à une route spécifique de votre application.
 app.use("/api/auth", userRoutes); //racine lié à l'auth et on passe userRoutes*/
 app.use("/api/sauces", sauceRoutes);
 //On configure notre serveur pour renvoyer des fichiers statiques pour une route donnée avec  express.static()  et  path.join().
