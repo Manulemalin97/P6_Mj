@@ -1,8 +1,12 @@
 /**
- * Notre middleware multer
+ *  multer-config.js
+ *  Middleware de gestion des images
  *
- * @Multer
- */
+ *  @author : Manuel JANSEN
+ *  @version : 1.0
+ *  @ date : 2023-02
+ *
+ **/
 
 const multer = require("multer");
 
