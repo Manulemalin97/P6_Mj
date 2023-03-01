@@ -1,3 +1,13 @@
+/**
+ *  sauce.js
+ *  Controlleur pour la gestion des sauces
+ *
+ *  @author : Manuel JANSEN
+ *  @version : 1.0
+ *  @ date : 2023-02
+ *
+ **/
+
 const Sauce = require("../models/Sauce");
 
 // fs  signifie « file system » (soit « système de fichiers », en français).
@@ -7,20 +17,27 @@ const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv").config();
 
+/**
+ * On crée une sauce
+ *
+ * @createSauce
+ */
+
 exports.createSauce = (req, res, next) => {
-  const sauceObject = JSON.parse(req.body.sauce); // on parse car
+  const sauceObject = JSON.parse(req.body.sauce); // on récupère les informations de la sauce depuis la requête avec JSON.parse()
   delete sauceObject._id; // on supprime l'id stocké car notre id est généré automatiquement par notre base de données.
   delete sauceObject._userId; // et le champ user id de la personne qui a crée l'objet, ne jamais faire confiance au client.
   const sauce = new Sauce({
     // on crée notre sauce
     ...sauceObject, // on affiche ce qui reste en ayant enlevé les 2 champs
 
-    imageUrl: `${req.protocol}://${req.get("host")}/images/${
-      req.file.filename
-    }`, //generation de lurl
-    //propriétés de lobjet requete 1.protocol 2. le nom d'hôte (/image ou on stock nos images) 3. le nom de fichier donné par multer
+    //Ensuite, on crée un nouvel objet Sauce avec les propriétés de la sauce à créer et l'URL de l'image générée par Multer.
+    imageUrl: `${req.protocol}:// 
+    ${req.get("host")}/images/${
+      //retourne le nom de domaine et le port (le cas échéant) utilisés pour accéder au serveur.
+      req.file.filename //est le nom du fichier généré par Multer lors du téléversement de l'image.
+    }`,
   });
-  console.log(sauce);
   sauce
     .save()
     .then(() => res.status(201).json({ message: "Sauce enregistrée" }))
@@ -32,6 +49,7 @@ exports.createSauce = (req, res, next) => {
  *
  * @getAllSauce
  */
+
 exports.getAllSauce = (req, res, next) => {
   // requete, réponse, middleware next qui nous envoie au prochain middleware
   Sauce.find() // find recupere tout
@@ -75,10 +93,12 @@ function verifyUser(req, userId) {
 
 exports.modifySauce = (req, res, next) => {
   if (req.file) {
+    // on verifie si une nouvelle image est envoyée dans la req
     Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+      //si oui on cherche la sauce a modifier grace a lid passé en params
       //on verifie que la sauce appartient bien à l'utilisateur avec verifyUser
       if (!verifyUser(req, sauce.userId)) {
-        return res.status(403).json({ message: "Action non autorisée" });
+        return res.status(403).json({ message: "Action non autorisée" }); //si sa échoue erreur 403
       }
 
       //on va récupérer seulement le nom de notre sauce en utilisant la méthode split puis slice pour récupérer la partie de fin
@@ -87,7 +107,6 @@ exports.modifySauce = (req, res, next) => {
         fs.unlink(filename, (err) => {
           if (err) {
             // probleme lors de la supression de l'image
-            console.log(err);
             return res.status(500).json({ err });
           }
         });
@@ -101,7 +120,7 @@ exports.modifySauce = (req, res, next) => {
         // Mise à jour de la sauce
         Sauce.updateOne(
           { _id: req.params.id },
-          { ...sauceObject, _id: req.params.id }
+          { ...sauceObject, _id: req.params.id } //met à jour une sauce existante dans la base de données en remplaçant ses propriétés existantes par les propriétés définies dans sauceObject
         )
           .then(() => res.status(200).json({ message: "Sauce modifiée !" }))
           .catch((error) => res.status(400).json({ error }));

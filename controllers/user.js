@@ -1,3 +1,13 @@
+/**
+ *  sauce.js
+ *  Controlleur pour la gestion des sauces
+ *
+ *  @author : Manuel JANSEN
+ *  @version : 1.0
+ *  @ date : 2023-02
+ *
+ **/
+
 //bcrypt pour saler le mdp
 const bcrypt = require("bcrypt");
 
@@ -25,7 +35,7 @@ exports.signup = (req, res, next) => {
         email: req.body.email,
         password: hash,
       });
-      user
+      user //On crée un nouvel utilisateur dans une base de données en utilisant une fonction appelée "save()"
         .save()
         .then(() => {
           //res.status 201, utilisateur crée !
@@ -34,9 +44,10 @@ exports.signup = (req, res, next) => {
 
         .catch((error) => {
           console.log("error:" + error);
-          res.status(400).json({ error });
+          res.status(400).json({ error }); //Si la création de l'utilisateur échoue, renvoye une réponse avec un code de statut HTTP 400
         });
     })
+    //Enfin, si une erreur survient lors de la tentative de connexion à la base de données, renvoyer une réponse avec un code de statut HTTP 500(server)
     .catch((error) => res.status(500).json({ error }));
 };
 
@@ -84,7 +95,7 @@ exports.login = (req, res, next) => {
             token: token,
           });
         })
-        .catch((error) => res.status(500).json({ error })); //500 erreur traitement server
+        .catch((error) => res.status(401).json({ error })); //401 erreur traitement server
     })
-    .catch((error) => res.status(500).json({ error })); //500 eurreur de traitement server
+    .catch((error) => res.status(500).json({ error })); //500 erreur de traitement server
 };
