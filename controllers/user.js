@@ -84,6 +84,8 @@ exports.login = (req, res, next) => {
             { userId: user._id },
             process.env.AUTH_TOKEN,
             {
+              
+
               //chiffrage secret
               expiresIn: process.env.LIFE_TOKEN, //durée de vie du token
             }
