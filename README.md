@@ -1,5 +1,7 @@
-## P6_mj_03_23
+## P6_mj_03_23 Backend
 
-Run `cd back` then `nodemon server` to launch the backend 
+Run `npm install`
 
-run `cd front` then `npm start` and navigate to `http://localhost:4200/`
+Run `npm start`
+
+Run `cd back` to position yourself in the back folder then `nodemon server` to launch the backend 
